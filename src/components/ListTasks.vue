@@ -4,13 +4,14 @@
       <v-list-subheader>General</v-list-subheader>
 
       <v-list-item 
-        v-for="(task, index) in props.tasks" 
+        v-for="(task, index) in taskStore.tasks" 
         :key="index" 
         :value="task.title"
+        @click="taskStore.taskDone(index)"
       >
-        <template v-slot:prepend="{ isActive }">
+        <template v-slot:prepend="{ }">
           <v-list-item-action start>
-            <v-checkbox-btn :model-value="isActive"></v-checkbox-btn>
+            <v-checkbox-btn :model-value="task.done"></v-checkbox-btn>
           </v-list-item-action>
         </template>
 
@@ -29,14 +30,14 @@
       <v-list>
         <v-list-item value="1">
           <v-list-item-title 
-            @click="toggleDialogEdit('Edit Task', index)"
+            @click="taskStore.showDialogEdit(index)"
           >
             Edit
           </v-list-item-title>
         </v-list-item>
         <v-list-item value="2">
           <v-list-item-title
-            @click="toggleDialogDelete('Delete Task', index)"
+            @click="taskStore.showDialogDelete(index)"
           >
             Delete
           </v-list-item-title>
@@ -52,83 +53,54 @@
     </v-list>
 
     <DialogEdit 
-      :show="showDialogEdit"
-      :title="dialogueTitle"
-      :task="selectedTask"
-      @success="editTask"
-      @cancel="resetEdit"
+      :show="taskStore.isVisibleDialogEdit"
+      title="Edit Task"
+      :task="taskStore.selectEditTask"
+      :cancelButton="cancelButtonEdit"
+      :successButton="successButtonEdit"
+      @success="taskStore.editTask"
+      @cancel="taskStore.resetEdit"
     >
     </DialogEdit>
 
     <DialogGeneric 
-      :show="showDialogDelete"
-      :title="dialogueTitle"
-      :description="`Are you sure you want to delete task {selectedTask}`"
-      cancelButtonText="Cancel"
-      successButtonText="Delete"
-      @success="deleteTask"
-      @cancel="resetDelete"
+      :show="taskStore.isVisibleDialogDelete"
+      title="Delete Task"
+      :description="`Are you sure you want to delete task '${taskStore.getTaskToDeleteTitle()}''`"
+      :cancelButton="cancelButtonDelete"
+      :successButton="successButtonDelete"
+      @success="taskStore.deleteTask"
+      @cancel="taskStore.resetDelete"
     >
     </DialogGeneric>
   </div>
 </template>
 
 <script setup>
-import { defineProps } from 'vue';
+import { useTaskStore } from "@/stores/task";
 
-const props = defineProps({
-  tasks: Object
-})
+const taskStore = useTaskStore();
+const cancelButtonDelete = ref({
+  text: "Cancel",
+  color: "red-darken-1",
+  variant: "elevated"
+});
 
-const dialogueTitle = ref();
-const selectedTask = ref();
-const selectedTaskIndex = ref(0);
+const successButtonDelete = ref({
+  text: "Delete",
+  color: "red-darken-1",
+  variant: "outlined"
+});
 
-//#region  Edit
-const showDialogEdit = ref(false);
-const toggleDialogEdit = (title, index) => {
-  showDialogEdit.value = !showDialogEdit.value;
-  dialogueTitle.value = title;
-  selectedTask.value = { ...props.tasks[index] };
-  selectedTaskIndex.value = index;
-};
+const cancelButtonEdit = ref({
+  text: "Cancel",
+  color: "green-darken-1",
+  variant: "outlined"
+});
 
-const resetEdit = () => {
-  showDialogEdit.value = false;
-  selectedTask.value = {};
-  selectedTaskIndex.value = 0;
-}
-
-const editTask = () => {
-  props.tasks[selectedTaskIndex.value] = {...selectedTask.value};
-  
-  resetEdit();
-}
-
-//#endregion
-
-//#region  Delete
-
-const showDialogDelete = ref(false);
-
-const toggleDialogDelete = (title, index) => {
-  showDialogDelete.value = !showDialogDelete.value;
-  dialogueTitle.value = title;
-  selectedTask.value = { ...props.tasks[index] };
-  selectedTaskIndex.value = index;
-};
-
-const resetDelete = () => {
-  showDialogDelete.value = false;
-  selectedTask.value = {};
-  selectedTaskIndex.value = 0;
-}
-
-const deleteTask = () => {
-  props.tasks.splice(selectedTaskIndex.value, 1);
-  
-  resetDelete();
-}
-
-//#endregion
+const successButtonEdit = ref({
+  text: "Edit",
+  color: "green-darken-1",
+  variant: "elevated"
+});
 </script>

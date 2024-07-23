@@ -1,4 +1,6 @@
 <template>
+  <Alert v-if="alertStore.showAlert"></Alert>
+
   <v-app id="inspire">
     <v-navigation-drawer v-model="drawer">
       <!--  -->
@@ -28,7 +30,6 @@
 
     <v-app-bar>
       <v-app-bar-nav-icon @click="drawer = !drawer"></v-app-bar-nav-icon>
-
       <v-app-bar-title>To-Do</v-app-bar-title>
     </v-app-bar>
 
@@ -40,6 +41,9 @@
 
 <script setup>
 import { ref } from "vue";
+import { useAlertStore } from "@/stores/alert";
+
+const alertStore = useAlertStore();
 
 const drawer = ref(null);
 const items = [
